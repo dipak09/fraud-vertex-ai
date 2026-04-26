@@ -49,7 +49,20 @@ python src/api.py
 ```
 The API will be available at `http://localhost:8080/predict`.
 
-## Vertex AI Pipeline
+Example request for local testing:
+```bash
+curl -X POST http://localhost:8080/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transaction_amount": 100.0,
+    "transaction_type": "online",
+    "location": "London",
+    "device_type": "mobile",
+    "account_age_days": 30
+  }'
+```
+
+## Vertex AI Pipeline (Production)
 
 The pipeline automates the entire lifecycle: Data -> Training -> Registry -> Endpoint.
 
@@ -60,10 +73,35 @@ python pipeline/pipeline.py
 This script compiles the pipeline and submits it to Vertex AI.
 
 ### 2. Test Deployed Endpoint
-Once the pipeline finishes, use the caller script with your new Endpoint ID:
+You can use the caller script or a direct CURL command.
+
+**Using Python:**
 ```bash
 python src/endpoint_caller.py --endpoint-id [YOUR_ENDPOINT_ID]
 ```
+
+**Using CURL:**
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  "https://[REGION]-aiplatform.googleapis.com/v1/projects/[PROJECT_ID]/locations/[REGION]/endpoints/[ENDPOINT_ID]:predict" \
+  -d '{
+    "instances": [
+      [100.0, "online", "London", "mobile", 30]
+    ]
+  }'
+```
+
+## Local vs Production Comparison
+
+| Feature | Local Environment | Production (Vertex AI) |
+|---------|-------------------|------------------------|
+| **Compute** | Your local machine | Google Cloud (n1-standard-4) |
+| **Scaling** | Single process | Autoscaling (1 to 3 nodes) |
+| **API Format** | JSON Dictionary | JSON List (NumPy Array style) |
+| **Auth** | None (Internal access) | OAuth2 Bearer Token |
+| **Performance** | Limited by local hardware | High-availability, low-latency |
 
 ## Technical Specifications
 
