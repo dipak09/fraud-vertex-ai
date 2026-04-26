@@ -70,8 +70,9 @@ def train_model(
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
     
-    categorical_features = ['transaction_type', 'location', 'device_type']
-    numeric_features = ['transaction_amount', 'account_age_days']
+    # Use indices instead of names for compatibility with Vertex AI pre-built container
+    categorical_features = [1, 2, 3]
+    numeric_features = [0, 4]
     
     preprocessor = ColumnTransformer(transformers=[
         ('num', StandardScaler(), numeric_features),
