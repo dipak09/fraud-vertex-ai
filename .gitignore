@@ -1,0 +1,30 @@
+# Environments
+.env
+venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Data and Models (big files)
+data/
+model/
+*.joblib
+*.csv
+*.pkl
+*.h5
+
+# KFP Compiled Pipelines
+*.yaml
+fraud_pipeline.yaml
+
+# OS generated files
+.DS_Store
+Thumbs.db

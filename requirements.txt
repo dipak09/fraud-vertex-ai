@@ -1,0 +1,11 @@
+google-cloud-aiplatform
+google-cloud-storage
+pandas
+scikit-learn
+joblib
+numpy
+kfp
+google-cloud-pipeline-components
+flask
+gunicorn
+python-dotenv
