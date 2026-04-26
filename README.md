@@ -1,29 +1,29 @@
-# Vertex AI Fraud: Real-Time Fraud Risk Scoring System
+# Vertex AI Fraud Detection System
 
-This project demonstrates a production-style MLOps pipeline for fraud detection using Google Cloud Vertex AI.
+This project implements a professional MLOps pipeline for real-time fraud risk scoring using Google Cloud Vertex AI and Scikit-Learn.
 
 ## Project Structure
 
-- `src/`
-    - `data_gen.py`: Generates synthetic fraud data.
-    - `train.py`: Trains a RandomForest model locally or in a container.
-    - `predict.py`: Core inference logic and monitoring placeholders.
-    - `api.py`: Flask API for local or custom serving.
-    - `endpoint_caller.py`: Script to call a deployed Vertex AI endpoint.
-- `pipeline/`
-    - `pipeline.py`: Kubeflow Pipelines definition for Vertex AI.
-- `Dockerfile`: For custom training and serving containers.
-- `requirements.txt`: Python dependencies.
+- **src/**: Core source code
+    - `data_gen.py`: Generates synthetic fraud datasets for training.
+    - `train.py`: Trains a RandomForest model using index-based feature mapping.
+    - `predict.py`: Contains the inference logic and monitoring placeholders.
+    - `api.py`: Local Flask API for testing predictions.
+    - `endpoint_caller.py`: Client script for interacting with Vertex AI endpoints.
+- **pipeline/**: MLOps orchestration
+    - `pipeline.py`: Definition for the Vertex AI Pipeline (Kubeflow).
+- **Dockerfile**: Container configuration for custom environments.
+- **requirements.txt**: Project dependencies.
 
 ## Setup
 
-1. **Install dependencies**:
+1. **Install Dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
 2. **GCP Configuration**:
-   Ensure you have the Google Cloud SDK installed and authenticated:
+   Authenticate and set your project details:
    ```bash
    gcloud auth login
    gcloud auth application-default login
@@ -32,63 +32,46 @@ This project demonstrates a production-style MLOps pipeline for fraud detection 
 
 ## Local Development
 
-### 1. Generate Synthetic Data
+### 1. Generate Data
 ```bash
 python src/data_gen.py --output-path data/fraud_data.csv --n-rows 10000
 ```
 
-### 2. Train Model Locally
+### 2. Train Locally
 ```bash
 python src/train.py --data-path data/fraud_data.csv --model-dir model/
 ```
 
-### 3. Run Inference API Locally
+### 3. Run Local API
 ```bash
 export MODEL_PATH=model/model.joblib
 python src/api.py
 ```
-Test it:
-```bash
-curl -X POST http://localhost:8080/predict -H "Content-Type: application/json" -d '{
-    "transaction_amount": 4500.0,
-    "transaction_type": "atm",
-    "location": "New York",
-    "device_type": "mobile",
-    "account_age_days": 5
-}'
-```
+The API will be available at `http://localhost:8080/predict`.
 
-## MLOps Pipeline (Vertex AI)
+## Vertex AI Pipeline
 
-### 1. Compile Pipeline
+The pipeline automates the entire lifecycle: Data -> Training -> Registry -> Endpoint.
+
+### 1. Execute Pipeline
 ```bash
 python pipeline/pipeline.py
 ```
-This generates `fraud_pipeline.yaml`.
+This script compiles the pipeline and submits it to Vertex AI.
 
-### 2. Run Pipeline on Vertex AI
-You can upload the `fraud_pipeline.yaml` to the Vertex AI UI or run it via the Python SDK:
-
-```python
-from google.cloud import aiplatform
-
-aiplatform.init(project="[YOUR_PROJECT_ID]", location="us-central1")
-
-job = aiplatform.PipelineJob(
-    display_name="fraud-detection-pipeline",
-    template_path="fraud_pipeline.yaml",
-    parameter_values={
-        "project": "[YOUR_PROJECT_ID]",
-        "region": "us-central1"
-    }
-)
-
-job.run()
+### 2. Test Deployed Endpoint
+Once the pipeline finishes, use the caller script with your new Endpoint ID:
+```bash
+python src/endpoint_caller.py --endpoint-id [YOUR_ENDPOINT_ID]
 ```
 
-## Features & Monitoring
+## Technical Specifications
 
-- **Input Features**: `transaction_amount`, `transaction_type`, `location`, `device_type`, `account_age_days`.
-- **Output**: `fraud_probability` (0 to 1).
-- **Deployment**: Deployed to Vertex AI Endpoint with autoscaling enabled (min 1, max 3 replicas).
-- **Monitoring**: Inference logs are printed to stdout, which Cloud Logging captures. A placeholder for drift detection is included in `src/predict.py`.
+- **Model**: RandomForestClassifier (Scikit-Learn 1.3.2)
+- **Feature Order**:
+    1. `transaction_amount` (Numerical)
+    2. `transaction_type` (Categorical)
+    3. `location` (Categorical)
+    4. `device_type` (Categorical)
+    5. `account_age_days` (Numerical)
+- **Deployment**: Autoscaling enabled (1-3 replicas) on `n1-standard-4` instances.
