@@ -21,7 +21,7 @@ def predict_fraud(project, location, endpoint_id, instance):
         
     response = endpoint.predict(instances=instances)
     
-    print("✅ Prediction Response:")
+    print("Prediction Response:")
     for prediction in response.predictions:
         print(json.dumps(prediction, indent=2))
     
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     if not args.project:
-        print("❌ Error: GCP Project ID is required. Set PROJECT_ID in .env or pass --project")
+        print("Error: GCP Project ID is required. Set PROJECT_ID in .env or pass --project")
         exit(1)
 
     # Example instance

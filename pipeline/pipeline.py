@@ -45,7 +45,7 @@ def data_generation(
 
 @component(
     base_image="python:3.9",
-    packages_to_install=["pandas", "scikit-learn", "joblib"]
+    packages_to_install=["pandas", "scikit-learn==1.3.2", "joblib", "numpy", "scipy"]
 )
 def train_model(
     dataset: Input[Dataset],
@@ -62,7 +62,9 @@ def train_model(
     from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score
     from sklearn.ensemble import RandomForestClassifier
     
+    print("Starting train_model component...")
     df = pd.read_csv(dataset.path)
+    print(f"Loaded dataset with {len(df)} rows")
     X = df.drop('is_fraud', axis=1)
     y = df['is_fraud']
     
@@ -146,7 +148,7 @@ def fraud_pipeline(
     region: str,
     n_rows: int = 10000,
     fraud_rate: float = 0.05,
-    serving_container_image: str = "us-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.0-24:latest"
+    serving_container_image: str = "us-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.1-3:latest"
 ):
     data_task = data_generation(n_rows=n_rows, fraud_rate=fraud_rate)
     
@@ -176,11 +178,11 @@ if __name__ == "__main__":
 
     # 1. Compile the pipeline to a YAML file
     compiler.Compiler().compile(pipeline_func=fraud_pipeline, package_path="fraud_pipeline.yaml")
-    print("✅ Pipeline compiled to fraud_pipeline.yaml")
+    print("Pipeline compiled to fraud_pipeline.yaml")
 
     # 2. If GCP credentials are set, submit the job to Vertex AI automatically
     if project_id and bucket_name and project_id != "your-project-id":
-        print(f"🚀 Submitting pipeline to Vertex AI project: {project_id} in {region}")
+        print(f"Submitting pipeline to Vertex AI project: {project_id} in {region}")
         aiplatform.init(project=project_id, location=region, staging_bucket=f"gs://{bucket_name}")
         
         job = aiplatform.PipelineJob(
@@ -189,9 +191,10 @@ if __name__ == "__main__":
             parameter_values={
                 "project": project_id,
                 "region": region
-            }
+            },
+            enable_caching=False
         )
         job.submit()
-        print(f"🔗 View your pipeline run: https://console.cloud.google.com/vertex-ai/pipelines?project={project_id}")
+        print(f"View your pipeline run: https://console.cloud.google.com/vertex-ai/pipelines?project={project_id}")
     else:
-        print("⚠️  Valid PROJECT_ID or BUCKET_NAME not found in .env. Skipping Vertex AI submission.")
+        print("Valid PROJECT_ID or BUCKET_NAME not found in .env. Skipping Vertex AI submission.")
