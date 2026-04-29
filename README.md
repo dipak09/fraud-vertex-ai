@@ -17,18 +17,42 @@ This project implements a professional MLOps pipeline for real-time fraud risk s
 
 ## Setup
 
-1. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 1. Prerequisites
+- **Python 3.10.x** (Required for compatibility with Vertex AI serving containers)
 
-2. **GCP Configuration**:
-   Authenticate and set your project details:
-   ```bash
-   gcloud auth login
-   gcloud auth application-default login
-   gcloud config set project [YOUR_PROJECT_ID]
-   ```
+### 2. Create and Activate Virtual Environment
+
+**Linux / macOS:**
+```bash
+# Create venv
+python3.10 -m venv venv
+
+# Activate venv
+source venv/bin/activate
+```
+
+**Windows:**
+```powershell
+# Create venv
+python -m venv venv
+
+# Activate venv
+.\venv\Scripts\activate
+```
+
+### 3. Install Dependencies
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 4. GCP Configuration
+Authenticate and set your project details:
+```bash
+gcloud auth login
+gcloud auth application-default login
+gcloud config set project [YOUR_PROJECT_ID]
+```
 
 ## Local Development
 
